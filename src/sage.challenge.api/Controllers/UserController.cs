@@ -13,59 +13,74 @@ namespace sage.challenge.api.Controllers
     [Produces("application/json")]
     public class UserController : Controller
     {
-        private readonly ISimpleObjectCache<Guid, User> _cache;
+        private readonly IUserService _userService;
 
-        public UserController(ISimpleObjectCache<Guid, User> cache)
+        public UserController(IUserService userService)
         {
-            _cache = cache;
+            _userService = userService;
         }
 
         [HttpPost]
         public async Task<IActionResult> CreateUser(User user)
         {
-            var users = await _cache.GetAllAsync();
-            if (users.Any(u => u.Email == user.Email))
+            var result = await _userService.CreateUser(user);
+            if (result.Success)
             {
-                return BadRequest("Email is not unique");
+                return Ok(result.Response);
             }
 
-            var age = (DateTime.Now - user.DateOfBirth).TotalDays / (365);
-            if (age<18)
-            {
-                return BadRequest("User must be at least 18 years old");
-            }
-            await _cache.AddAsync(user.Id, user);
-            return Ok(user);
+            return BadRequest(result.ErrorMessage);
+
         }
 
         [HttpGet]
         public async Task<IActionResult> GetUsers()
         {
-            var users = await _cache.GetAllAsync();
-            return Ok(users);
+            var result = await _userService.GetUsers();
+            if (result.Success)
+            {
+                return Ok(result.Response);
+            }
+
+            return BadRequest(result.ErrorMessage);
         }
 
         [HttpGet]
         [Route("{id}")]
         public async Task<IActionResult> GetUser(Guid id)
         {
-            var user = await _cache.GetAsync(id);
-            return Ok(user);
+            var result = await _userService.GetUser(id);
+            if (result.Success)
+            {
+                return Ok(result.Response);
+            }
+
+            return BadRequest(result.ErrorMessage);
         }
 
         [HttpDelete]
         [Route("{id}")]
         public async Task<IActionResult> DeleteUser(Guid id)
         {
-            await _cache.DeleteAsync(id);
-            return Ok(id);
+            var result = await _userService.DeleteUser(id);
+            if (result.Success)
+            {
+                return Ok(result.Response);
+            }
+
+            return BadRequest(result.ErrorMessage);
         }
 
         [HttpPut]
         public async Task<IActionResult> PutUser(User user)
         {
-            await _cache.UpdateAsync(user.Id, user);
-            return Ok(user);
+            var result = await _userService.UpdateUser(user);
+            if (result.Success)
+            {
+                return Ok(result.Response);
+            }
+
+            return BadRequest(result.ErrorMessage);
         }
     }
 }

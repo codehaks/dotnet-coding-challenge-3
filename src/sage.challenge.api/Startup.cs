@@ -30,7 +30,8 @@ namespace sage.challenge.api
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
             });
 
-            services.AddSingleton<ISimpleObjectCache<Guid, User>, SimpleObjectCache<Guid, User>>();        
+            services.AddSingleton<ISimpleObjectCache<Guid, User>, SimpleObjectCache<Guid, User>>();     
+            services.AddScoped<IUserService,UserService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
