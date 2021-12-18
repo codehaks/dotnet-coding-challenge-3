@@ -3,6 +3,7 @@ using sage.challenge.data.Cache;
 using sage.challenge.data.Entities;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace sage.challenge.api.Controllers
@@ -22,6 +23,17 @@ namespace sage.challenge.api.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateUser(User user)
         {
+            var users = await _cache.GetAllAsync();
+            if (users.Any(u => u.Email == user.Email))
+            {
+                return BadRequest("Email is not unique");
+            }
+
+            var age = (DateTime.Now - user.DateOfBirth).TotalDays / (365);
+            if (age<18)
+            {
+                return BadRequest("User must be at least 18 years old");
+            }
             await _cache.AddAsync(user.Id, user);
             return Ok(user);
         }
